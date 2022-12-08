@@ -1,8 +1,8 @@
 # coding: UTF-8
 # coding: Shift_JIS
 import numpy as np 
-import PySimpleGUI as sg
-import logging as log
+# import PySimpleGUI as sg
+# import logging as log
 class InputMark():
     def __init__(self,x,y):
         self.x = x
@@ -159,9 +159,11 @@ class App(InputMark):
         
         
         
+import qlearning_npc as ql
 
 
 def main():
+    print(ql.sum_as_string(5, 20))
     test = App()
     test.CreateBoard()
     test.PlayerSet()

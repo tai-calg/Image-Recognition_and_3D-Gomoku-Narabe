@@ -1,9 +1,15 @@
 # coding: UTF-8
 # coding: Shift_JIS
 import numpy as np 
-import PySimpleGUI as sg
 import re 
-from enum import Enum
+from enum import IntEnum
+import qlearning_npc as ql
+
+
+class Player(IntEnum) :
+    HUMAN = 0,
+    NPC = 1,
+    
 
 class InputMark():
     def __init__(self,x,y,z):
@@ -17,30 +23,41 @@ class InputMark():
     def InputXYZ(self):
         flag = False
         while flag == False:
-            wherePoint = input("半角空白で区切って置く場所を決めてください。順序はx,y,zです。")
+            
+            
+            if self.nowPlay == Player.HUMAN:
+                    
+                wherePoint = input("半角空白で区切って置く場所を決めてください。順序はx,y,zです。")
+                    
                 
-            
-            """    
-            match = re.match(r"\d \d \d", wherePoint)
-            if match == False:
-                self.WriteError()  #クラス内の関数を呼び出したいならself.関数名とする（その関数の方にも引数selfを入れておくこと）
-                continue
-            """
-            
-            if len(wherePoint.split(" ")) != 3:
-                self.WriteError()
-                continue
-            
-            self.x = wherePoint.split(" ")[0]
-            self.y = wherePoint.split(" ")[1]
-            self.z = wherePoint.split(" ")[2]
-            
-            
-            for i in [self.x, self.y, self.z]:
-                if i not in ["1","2","3","4"]:
+                """    
+                match = re.match(r"\d \d \d", wherePoint)
+                if match == False:
+                    self.WriteError()  #クラス内の関数を呼び出したいならself.関数名とする（その関数の方にも引数selfを入れておくこと）
+                    continue
+                """
+                
+                if len(wherePoint.split(" ")) != 3:
                     self.WriteError()
                     continue
+                
+                self.x = wherePoint.split(" ")[0]
+                self.y = wherePoint.split(" ")[1]
+                self.z = wherePoint.split(" ")[2]
+                
+                
+                for i in [self.x, self.y, self.z]:
+                    if i not in ["1","2","3","4"]:
+                        self.WriteError()
+                        continue
+                
+            elif self.nowPlay == Player.NPC:
+                print("NPCが考えています...")
+                self.x, self.y, self.z = ql.qlearning()
+            
 
+
+            # 共通処理
             self.x = int(self.x)
             self.y = int(self.y)
             self.z = int(self.z)
@@ -68,15 +85,13 @@ class InputMark():
 
 
 class App(InputMark):
-    #bingo = False bingoはフラグではあるが定数ではないのでinitのなかに入れる（クラス変数の役割ではない）
-    #board = [] ここは予想通りいらなかった
+
 
     def __init__(self, x=1, y=1, z=1):
         super().__init__(x,y,z)
-        self.nowPlay = 0
+        self.nowPlay = Player.HUMAN
         self.bingo = False
         self.count = 0
-        #self.board = board # ここCreateBoardがやってくれるからいらない。init以外のところでself.定義してもいい
         """
         initでself設定するのはインスタンス定義の時に毎回初期化したい変数だけ（ここに入れておかないと二つ目のインスタンス
         を作った時に一つ目のインスタンスの変数を引き継いでしまう。）
@@ -101,15 +116,15 @@ class App(InputMark):
         self.oxList = ["●","✖️"]
         print("プレイヤーが切り替わります。")
         print(f"次は{self.playerList[self.nowPlay]}さんの番です")
-        if self.nowPlay == 0:
+        if self.nowPlay == Player.HUMAN :
             self.marubatu = self.oxList[0]
             self.plot = 1
-            self.nowPlay = 1 #nowPlayをここで変えているが、本当に変わるのはPlotMarkメソッドを実行したあと
+            self.nowPlay = Player.NPC #nowPlayをここで変えているが、本当に変わるのはPlotMarkメソッドを実行したあと
 
-        elif self.nowPlay == 1:
+        elif self.nowPlay == Player.NPC:
             self.marubatu = self.oxList[1]
-            self.nowPlay = 0
             self.plot = 2
+            self.nowPlay = Player.HUMAN
 
 
     def PlotMark(self):
